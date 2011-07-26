@@ -28,6 +28,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -47,7 +48,7 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
     private LinearLayout mActionsView;
     private ImageButton mHomeBtn;
     private RelativeLayout mHomeLayout;
-    private ProgressBar mProgress;
+    private LinearLayout mProgress;
 
     public ActionBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,7 +66,7 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
         mTitleView = (TextView) mBarView.findViewById(R.id.actionbar_title);
         mActionsView = (LinearLayout) mBarView.findViewById(R.id.actionbar_actions);
         
-        mProgress = (ProgressBar) mBarView.findViewById(R.id.actionbar_progress);
+        mProgress = (LinearLayout) mBarView.findViewById(R.id.actionbar_progress);
 
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.ActionBar);
@@ -171,9 +172,9 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
      * Adds a new {@link Action}.
      * @param action the action to add
      */
-    public void addAction(Action action) {
+    public View addAction(Action action) {
         final int index = mActionsView.getChildCount();
-        addAction(action, index);
+        return addAction(action, index);
     }
 
     /**
@@ -181,8 +182,10 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
      * @param action the action to add
      * @param index the position at which to add the action
      */
-    public void addAction(Action action, int index) {
-        mActionsView.addView(inflateAction(action), index);
+    public View addAction(Action action, int index) {
+    	View view = inflateAction(action);
+        mActionsView.addView(view, index);
+        return view;
     }
 
     /**
@@ -231,11 +234,21 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
      * @return a view
      */
     private View inflateAction(Action action) {
-        View view = mInflater.inflate(R.layout.actionbar_item, mActionsView, false);
-
-        ImageButton labelView =
-            (ImageButton) view.findViewById(R.id.actionbar_item);
-        labelView.setImageResource(action.getDrawable());
+        View view;
+        
+        if (action.getText() != null) {
+	        view = mInflater.inflate(R.layout.actionbar_text_item, mActionsView, false);
+	
+	        Button labelView =
+	            (Button) view.findViewById(R.id.actionbar_item);
+	        labelView.setText(action.getText());
+        } else {
+	        view = mInflater.inflate(R.layout.actionbar_item, mActionsView, false);
+	
+	        ImageButton labelView =
+	            (ImageButton) view.findViewById(R.id.actionbar_item);
+	        labelView.setImageResource(action.getDrawable());
+        }
 
         view.setTag(action);
         view.setOnClickListener(this);
@@ -255,18 +268,26 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
     public interface Action {
         public int getDrawable();
         public void performAction(View view);
+        public String getText();
     }
 
     public static abstract class AbstractAction implements Action {
         final private int mDrawable;
+        final private String mText;
 
-        public AbstractAction(int drawable) {
+        public AbstractAction(int drawable, String text) {
             mDrawable = drawable;
+            mText = text;
         }
 
         @Override
         public int getDrawable() {
             return mDrawable;
+        }
+        
+        @Override
+        public String getText() {
+            return mText;
         }
     }
 
@@ -274,8 +295,8 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
         private Context mContext;
         private Intent mIntent;
 
-        public IntentAction(Context context, Intent intent, int drawable) {
-            super(drawable);
+        public IntentAction(Context context, Intent intent, int drawable, String text) {
+            super(drawable, text);
             mContext = context;
             mIntent = intent;
         }
@@ -299,4 +320,10 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
         }
     }
     */
+    
+    public void updateText(View view, String text) {
+        Button labelView =
+            (Button) view.findViewById(R.id.actionbar_item);
+        labelView.setText(text);
+    }
 }
