@@ -252,6 +252,7 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
 
         view.setTag(action);
         view.setOnClickListener(this);
+        action.ready(view);
         return view;
     }
 
@@ -267,6 +268,7 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
      */
     public interface Action {
         public int getDrawable();
+        void ready(View view);
         public void performAction(View view);
         public String getText();
     }
@@ -288,6 +290,10 @@ public class ActionBar extends RelativeLayout implements OnClickListener {
         @Override
         public String getText() {
             return mText;
+        }
+        
+        @Override
+        public void ready(View view) {
         }
     }
 
